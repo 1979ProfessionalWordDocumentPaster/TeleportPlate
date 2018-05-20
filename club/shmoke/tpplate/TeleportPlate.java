@@ -20,6 +20,7 @@ public class TeleportPlate extends JavaPlugin implements Listener {
         Bukkit.getPluginManager().registerEvents(this, this);
     }
 
+    @SuppressWarnings("deprecation")
     @EventHandler
     public void onMove(PlayerMoveEvent event) {
         Player player = event.getPlayer();
@@ -35,14 +36,51 @@ public class TeleportPlate extends JavaPlugin implements Listener {
 
             Sign sign = (Sign) loc.getBlock().getState();
 
-            if (!sign.getLine(1).equalsIgnoreCase("[Up]")) continue;
+            Direction dir = Direction.NONE;
+
+            switch (sign.getLine(1).toLowerCase()) {
+                case "[up]":
+                    dir = Direction.UP;
+                    break;
+                case "[down]":
+                    dir = Direction.DOWN;
+                    break;
+                case "[north]":
+                    dir = Direction.NORTH;
+                    break;
+                case "[east]":
+                    dir = Direction.EAST;
+                    break;
+                case "[south]":
+                    dir = Direction.SOUTH;
+                    break;
+                case "[west]":
+                    dir = Direction.WEST;
+                    break;
+                default:
+                    break;
+            }
+
+            if (dir == Direction.NONE) return;
+
             try {
                 Integer blocks = Integer.parseInt(sign.getLine(2));
                 int id = sign.getData().getData();
-                player.teleport(player.getLocation().add(id == 4 ? 1 : id == 5 ? -1 : 0, blocks, id == 2 ? 1 : id == 3 ? -1 : 0));
+                boolean vert = dir == Direction.UP || dir == Direction.DOWN;
+                boolean up = dir == Direction.UP, down = dir == Direction.DOWN, north = dir == Direction.NORTH, east = dir == Direction.EAST, south = dir == Direction.SOUTH, west = dir == Direction.WEST;
+
+                player.teleport(player.getLocation().add(
+                        east ? blocks : west ? -blocks : vert ? id == 4 ? 1 : id == 5 ? -1 : 0 : 0,
+                        up ? blocks : down ? -blocks : 0,
+                        south ? blocks : north ? -blocks : vert ? id == 2 ? 1 : id == 3 ? -1 : 0 : 0));
+
                 return;
             } catch (Exception ex) {
             }
         }
+    }
+
+    private enum Direction {
+        NORTH, EAST, SOUTH, WEST, UP, DOWN, NONE
     }
 }
